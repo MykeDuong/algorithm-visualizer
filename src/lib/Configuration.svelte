@@ -5,7 +5,7 @@
   </div>
   
   <div class="category">
-    <button class="category-header" id='algorithms' on:click={handleClick}>
+    <button class="category-header" id='algorithms'  on:click={handleCategoryExpand}>
       <Icon icon="ph:graph" width={40} color={theme.colors.highlightColor0} inline />
       Algorithms
     </button>
@@ -24,18 +24,22 @@
   </div>
 
   <div class="category">
-    <button class="category-header" id='maze-creation' on:click={handleClick}>
+    <button class="category-header" id='maze-creation' on:click={handleCategoryExpand}>
       <Icon icon="game-icons:maze" width={40} color={theme.colors.highlightColor0} />
       Maze Creation
     </button>
   </div>
 
   <div class="category">
-    <button class="category-header" id='cells' on:click={handleClick}>
+    <button class="category-header" id='cells' on:click={handleCategoryExpand}>
       <Icon icon="ic:twotone-square" width={40} color={theme.colors.highlightColor0} />
       Cells
     </button>
   </div>
+
+  <button class="visualize-button" on:click={handleVisualize}>
+    {selectedAlgorithm ? `Visualize ${selectedAlgorithm}` : 'No Algorithm Selected'}
+  </button>
 
 </div>
 
@@ -139,23 +143,41 @@
     background-color: var(--highlight-color-0);
   }
 
+  .visualize-button {
+    background-color: var(--highlight-color-0);
+    border: none;
+    border-radius: 10px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    margin-right: 20%;
+    margin-left: calc(20% - 10px);
+
+    font-size: 1rem;
+    text-align: center;
+    color: var(--light-color-2);
+
+    &:hover {
+      box-shadow: 3px 3px 3px rgb(255, 255, 255, 0.2);
+    }
+  }
+
 </style>
 
 <script lang='ts'>
   import Icon from '@iconify/svelte';
   import theme from '$lib/theme';
+  import { visualizeAlgorithm } from './stores';
 
   let algorithmsVisible = false;
   let mazeCreationVisible = false;
   let cellsVisible = false;
 
-  let selectedAlgorithm: string | null = null; 
+  let selectedAlgorithm: string = ''; 
 
   const weightedAlgorithms: string[] = ["Dijkstra's Algorithm", "A* Search"];
   const unweightedAlgorithms: string[] = ["Breath-first Search", "Depth-first Search"];
 
-
-  const handleClick = (e: MouseEvent) => {
+  const handleCategoryExpand = (e: MouseEvent) => {
     if ((<HTMLElement>e.target!).id === 'algorithms') {
       console.log("clicked");
       algorithmsVisible = !algorithmsVisible;
@@ -170,6 +192,10 @@
 
   const handleSelectAlgorithm = (e: MouseEvent) => {
     selectedAlgorithm = (<HTMLElement>e.target!).id;
+  }
+
+  const handleVisualize = (e: MouseEvent) => {
+    visualizeAlgorithm.set(selectedAlgorithm);
   }
 
 </script>
