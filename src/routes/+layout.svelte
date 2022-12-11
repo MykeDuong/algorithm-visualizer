@@ -28,3 +28,7 @@
     font-family: 'Raleway', sans-serif;
   }
 </style>
+
+<script>
+  export const prerender = true;
+</script>

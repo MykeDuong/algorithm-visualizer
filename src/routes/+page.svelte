@@ -17,9 +17,10 @@
     margin: 0;
     padding: 0;
   }
-</style>
+</style> 
 
 <script lang='ts'>
+  // export const prerender = true;
   import Configuration from '$lib/Configuration.svelte';
   import Grid from '$lib/Grid.svelte';
 </script>
