@@ -1,7 +1,7 @@
 import ghpages from 'gh-pages';
 
 ghpages.publish(
-    'public', // path to public directory
+    'src/app.html', // path to public directory
     {
         branch: 'gh-pages',
         repo: 'https://github.com/MykeDuong/algorithm-visualizer.git',
