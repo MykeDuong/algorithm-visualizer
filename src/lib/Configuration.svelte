@@ -174,7 +174,7 @@
 
   let selectedAlgorithm: string = ''; 
 
-  const weightedAlgorithms: string[] = ["Dijkstra's Algorithm", "A* Search"];
+  const weightedAlgorithms: string[] = ["Dijkstra's Algorithm", "Greedy Best-first Search", "A* Search"];
   const unweightedAlgorithms: string[] = ["Breath-first Search", "Depth-first Search"];
 
   const handleCategoryExpand = (e: MouseEvent) => {

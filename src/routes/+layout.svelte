@@ -16,6 +16,8 @@
     --light-color-5: #413F42;
     
     --highlight-color-0: #DC3535;
+
+    --yellow-color:  #FFFF00;
   }
 
   :global(body) {
@@ -24,7 +26,3 @@
     font-family: 'Raleway', sans-serif;
   }
 </style>
-
-<script>
-  import theme from '$lib/theme';
-</script>

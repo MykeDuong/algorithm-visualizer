@@ -1,6 +1,7 @@
 export enum Role {
   Start = "Start",
   Destination = "Destination",
+  Block = "Block",
   Normal = "Normal"
 }
 
@@ -8,6 +9,7 @@ export enum Status {
   Unvisited = "Unvisited",
   Visited = "Visited",
   Visiting = "Visiting",
+  Path = "Path",
 }
 
 export default class CellModel {

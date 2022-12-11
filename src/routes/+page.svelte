@@ -20,10 +20,6 @@
 </style>
 
 <script lang='ts'>
-
   import Configuration from '$lib/Configuration.svelte';
   import Grid from '$lib/Grid.svelte';
-
-  
-
 </script>

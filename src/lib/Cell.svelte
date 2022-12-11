@@ -35,6 +35,10 @@
   .visited {
     background-color: var(--dark-color-0);
   }
+
+  .path {
+    background-color: var(--yellow-color);
+  }
 </style>
 
 <script lang='ts'>
@@ -56,6 +60,8 @@
     if (grid[i][j].status === Status.Visiting) {return 'visiting'}
     
     if (grid[i][j].status === Status.Visited) return 'visited'
+
+    if (grid[i][j].status === Status.Path) return 'path'
 
     return 'normal'
   }

@@ -41,7 +41,7 @@
 <script lang='ts'>
   import CellModel, { Role, Status } from './Cell';
   import Cell from './Cell.svelte'
-  import { bfs, dfs } from './Algorithms';
+  import { aStar, bfs, dfs, dijkstra, greedyBfs } from './Algorithms';
   import { visualizeAlgorithm } from './stores';
 
   const row = 31
@@ -77,6 +77,21 @@
       case "Depth-first Search": {
         reset();
         dfs(startRow, startCol, desRow, desCol, grid, gridView);
+        break;
+      }
+      case "Dijkstra's Algorithm": {
+        reset();
+        dijkstra(startRow, startCol, desRow, desCol, grid, gridView);
+        break;
+      }
+      case "Greedy Best-first Search": {
+        reset();
+        greedyBfs(startRow, startCol, desRow, desCol, grid, gridView);
+        break;
+      }
+      case "A* Search": {
+        reset();
+        aStar(startRow, startCol, desRow, desCol, grid, gridView);
         break;
       }
     }
