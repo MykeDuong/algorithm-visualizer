@@ -56,7 +56,6 @@
   }
 
   .app__configuration {
-    position: fixed;
     background-color: var(--dark-color-1);
     width: 23%;
     height: 100%;
@@ -199,7 +198,6 @@
 
   const handleCategoryExpand = (e: MouseEvent) => {
     if ((<HTMLElement>e.target!).id === 'algorithms') {
-      console.log("clicked");
       algorithmsVisible = !algorithmsVisible;
     } else if ((<HTMLElement>e.target!).id === 'maze-creation') {
       mazeCreationVisible = !mazeCreationVisible;
@@ -221,7 +219,6 @@
 
   $: lock.subscribe(value => {
     locked = value
-    console.log(locked);
     updateButton++;
   })
 

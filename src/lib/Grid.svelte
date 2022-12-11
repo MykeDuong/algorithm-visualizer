@@ -1,13 +1,15 @@
-<div class="app__grid">
-  <div class="grid">
-    {#each grid as r, i}
-      <div class="row">
-        {#each r as cell, j}
-          <Cell bind:cell={grid[i][j]} {i} {j} {grid} bind:this={gridView[i][j]} />
-        {/each}
-      </div>
-    {/each}
-  </div>
+<div class="app__grid" bind:clientWidth={boxWidth} bind:clientHeight={boxHeight}>
+  {#if (boxWidth !== 0)}
+    <div class="grid">
+      {#each grid as r, i}
+        <div class="row">
+          {#each r as cell, j}
+            <Cell bind:cell={grid[i][j]} {i} {j} {grid} bind:this={gridView[i][j]} />
+          {/each}
+        </div>
+      {/each}
+    </div>
+  {/if}
 </div>
 
 <style>
@@ -39,35 +41,56 @@
 </style>
 
 <script lang='ts'>
+  import { onMount } from 'svelte';
+
   import CellModel, { Role, Status } from './Cell';
   import Cell from './Cell.svelte'
   import { aStar, bfs, dfs, dijkstra, greedyBfs } from './Algorithms';
   import { visualizeAlgorithm, lock } from './stores';
 
-  const row = 31
-  const col = 40
+  let boxWidth: number = 0;
+  let boxHeight: number = 0;
 
-  let grid: CellModel[][] = Array(row);
-  let gridView: Cell[][] = [...Array(row)].map(e => Array(col));
+  let row: number = 10;
+  let col: number = 10;
 
-  for (let i = 0; i < row; i++) {
-    grid[i] = Array(col);
-    for (let j = 0; j < col; j++) {
-      grid[i][j] = new CellModel()
-    }
-  }
+  let grid: CellModel[][];
+  let gridView: Cell[][];
 
   // Create start cell
-  const startRow = Math.floor(Math.random() * (row));
-  const startCol = Math.floor(Math.random() * (col));
-  grid[startRow][startCol].setStart();
+  let startRow = 0;
+  let startCol = 0;
 
   // Create destination cell
-  const desRow = Math.floor(Math.random() * (row));
-  const desCol = Math.floor(Math.random() * (col));
-  grid[desRow][desCol].setDestination();
+  let desRow = 0;
+  let desCol = 0;
+
+  onMount(() => {
+    row = Math.floor(boxHeight / 31)
+    col = Math.floor(boxWidth / 32) 
+    grid = Array(row);
+    gridView= [...Array(row)].map(e => Array(col));
+
+    for (let i = 0; i < row; i++) {
+      grid[i] = Array(col);
+      for (let j = 0; j < col; j++) {
+        grid[i][j] = new CellModel()
+      }
+    }
+
+    // Create start cell
+    startRow = Math.floor(Math.random() * (row));
+    startCol = Math.floor(Math.random() * (col));
+    grid[startRow][startCol].setStart();
+
+    // Create destination cell
+    desRow = Math.floor(Math.random() * (row));
+    desCol = Math.floor(Math.random() * (col));
+    grid[desRow][desCol].setDestination();
+  })
 
   visualizeAlgorithm.subscribe(async value => {
+    if (!grid) return
     lock.set(true);
     switch (value) {
       case "clean": {

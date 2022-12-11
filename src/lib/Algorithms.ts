@@ -102,7 +102,7 @@ export const dfs = async (startRow: number, startCol: number, desRow: number, de
     }
   }
   const path = tracePath(startRow, startCol, desRow, desCol, parents)
-  visualizePath(path, grid, gridView);
+  await visualizePath(path, grid, gridView);
 }
 
 export const dijkstra = async (startRow: number, startCol: number, desRow: number, desCol: number, grid: CellModel[][], gridView: Cell[][]) => {
@@ -178,7 +178,7 @@ export const dijkstra = async (startRow: number, startCol: number, desRow: numbe
     }
   }
   const path = tracePath(startRow, startCol, desRow, desCol, parents)
-  visualizePath(path, grid, gridView);
+  await visualizePath(path, grid, gridView);
 }
 
 export const greedyBfs = async (startRow: number, startCol: number, desRow: number, desCol: number, grid: CellModel[][], gridView: Cell[][]) => {
@@ -258,7 +258,7 @@ export const greedyBfs = async (startRow: number, startCol: number, desRow: numb
     }
   }
   const path = tracePath(startRow, startCol, desRow, desCol, parents)
-  visualizePath(path, grid, gridView);
+  await visualizePath(path, grid, gridView);
 }
 
 export const aStar = async (startRow: number, startCol: number, desRow: number, desCol: number, grid: CellModel[][], gridView: Cell[][]) => {
@@ -341,7 +341,7 @@ export const aStar = async (startRow: number, startCol: number, desRow: number, 
     }
   }
   const path = tracePath(startRow, startCol, desRow, desCol, parents)
-  visualizePath(path, grid, gridView);
+  await visualizePath(path, grid, gridView);
 }
 
 export const visualizePath = async (path: number[][], grid: CellModel[][], gridView: Cell[][]) => {
