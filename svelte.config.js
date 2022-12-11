@@ -1,4 +1,4 @@
-import adapter from '@sveltejs/adapter-auto';
+import adapter from '@sveltejs/adapter-static';
 import preprocess from 'svelte-preprocess';
 
 const dev = "production" === "development";
@@ -13,6 +13,7 @@ const config = {
 		adapter: adapter({
 			pages: "docs",
 			assets: "docs",
+			strict: false,
 		}),
 		paths: {
 			base: dev ? "" : "/algorithm-visualizer",
