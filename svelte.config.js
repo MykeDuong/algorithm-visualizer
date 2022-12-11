@@ -13,12 +13,10 @@ const config = {
 		adapter: adapter({
 			pages: "docs",
 			assets: "docs",
-			strict: false,
 		}),
 		paths: {
 			base: dev ? "" : "/algorithm-visualizer",
 		},
-		// hydrate the <div id="svelte"> element in src/app.htmlcle
 		files: {
 			lib: './src/lib'
 		}

@@ -1,3 +1,4 @@
+
 <div class="app">
   <Configuration />
   <Grid />
@@ -20,7 +21,6 @@
 </style> 
 
 <script lang='ts'>
-  // export const prerender = true;
   import Configuration from '$lib/Configuration.svelte';
   import Grid from '$lib/Grid.svelte';
 </script>

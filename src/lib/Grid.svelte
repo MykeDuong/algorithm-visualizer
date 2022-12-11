@@ -5,11 +5,11 @@
   on:mousedown={handleMouseDown}
   on:mouseup={handleMouseUp}
 >
-  {#if (boxWidth !== 0)}
+  {#if (boxWidth !== 0 && boxWidth !== undefined && boxWidth !== null)}
     <div class="grid">
       {#each grid as r, i}
         <div class="row">
-          {#each r as cell, j}
+          {#each r as _cell, j}
             <Cell bind:cell={grid[i][j]} {i} {j} {grid} bind:this={gridView[i][j]} />
           {/each}
         </div>
@@ -70,8 +70,6 @@
   // Create destination cell
   let desRow = 0;
   let desCol = 0;
-
-  let mounted = false;
   let initialized = false;
 
   onMount(async () => {
