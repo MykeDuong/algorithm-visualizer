@@ -1,4 +1,10 @@
-<div class="app__grid" bind:clientWidth={boxWidth} bind:clientHeight={boxHeight}>
+<div
+  class="app__grid"
+  bind:clientWidth={boxWidth}
+  bind:clientHeight={boxHeight}
+  on:mousedown={handleMouseDown}
+  on:mouseup={handleMouseUp}
+>
   {#if (boxWidth !== 0)}
     <div class="grid">
       {#each grid as r, i}
@@ -46,7 +52,7 @@
   import CellModel, { Role, Status } from './Cell';
   import Cell from './Cell.svelte'
   import { aStar, bfs, dfs, dijkstra, greedyBfs } from './Algorithms';
-  import { visualizeAlgorithm, lock } from './stores';
+  import { visualizeAlgorithmStore, lockStore, gridMouseDownStore, startCellStore, desCellStore } from './stores';
 
   let boxWidth: number = 0;
   let boxHeight: number = 0;
@@ -65,7 +71,10 @@
   let desRow = 0;
   let desCol = 0;
 
-  onMount(() => {
+  let mounted = false;
+  let initialized = false;
+
+  onMount(async () => {
     row = Math.floor(boxHeight / 31)
     col = Math.floor(boxWidth / 32) 
     grid = Array(row);
@@ -81,19 +90,62 @@
     // Create start cell
     startRow = Math.floor(Math.random() * (row));
     startCol = Math.floor(Math.random() * (col));
-    grid[startRow][startCol].setStart();
-
+    
     // Create destination cell
     desRow = Math.floor(Math.random() * (row));
     desCol = Math.floor(Math.random() * (col));
-    grid[desRow][desCol].setDestination();
+    
+    startCellStore.set([startRow ,startCol]);
+    desCellStore.set([desRow, desCol]);
+    
+    await new Promise(f => setTimeout(f, 10))
+    initialized = true
   })
 
-  visualizeAlgorithm.subscribe(async value => {
+  startCellStore.subscribe(value => {
+    console.log(startRow, startCol);
     if (!grid) return
-    lock.set(true);
+
+    if (initialized) {
+      grid[startRow][startCol].setRole(Role.Normal);
+      gridView[startRow][startCol].update();
+      startRow = value[0]
+      startCol = value[1]
+    }
+    
+    grid[value[0]][value[1]].setStart();
+    if (initialized) {
+      gridView[value[0]][value[1]].update();
+    }
+  })
+
+  desCellStore.subscribe(value => {
+    if (!grid) return
+
+    if (initialized) {
+      grid[desRow][desCol].setRole(Role.Normal);
+      gridView[desRow][desCol].update()
+      desRow = value[0]
+      desCol = value[1]
+    }
+    
+    grid[value[0]][value[1]].setDestination();
+    if (initialized) {
+      gridView[value[0]][value[1]].update();
+    }
+  })
+
+  visualizeAlgorithmStore.subscribe(async value => {
+    grid = grid;
+    if (!grid) return
+
+    lockStore.set(true);
     switch (value) {
       case "clean": {
+        clean();
+        break;
+      }
+      case "reset": {
         reset();
         break;
       }
@@ -118,8 +170,17 @@
         break;
       }
     }
-    lock.set(false);
+    lockStore.set(false);
   })
+
+  const clean = () => {
+    for (let i = 0; i < row; i++) {
+      for (let j = 0; j < col; j++) {
+        grid[i][j].clean()
+        gridView[i][j].update();
+      }
+    }
+  }
 
   const reset = () => {
     for (let i = 0; i < row; i++) {
@@ -128,6 +189,14 @@
         gridView[i][j].update();
       }
     }
+  }
+
+  const handleMouseDown = () => {
+    gridMouseDownStore.set(true);
+  }
+
+  const handleMouseUp = () => {
+    gridMouseDownStore.set(false);
   }
 
 </script>

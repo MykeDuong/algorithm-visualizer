@@ -18,6 +18,8 @@
     --highlight-color-0: #DC3535;
 
     --yellow-color:  #FFFF00;
+
+    --green-color: #54B435;
   }
 
   :global(body) {

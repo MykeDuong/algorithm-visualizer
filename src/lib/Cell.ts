@@ -25,6 +25,10 @@ export default class CellModel {
     this.role = Role.Start
   }
 
+  setRole(r: Role) {
+    this.role = r;
+  } 
+
   setDestination() {
     this.role = Role.Destination
   }
@@ -33,7 +37,14 @@ export default class CellModel {
     this.status = status;
   }
 
-  reset() {
+  clean() {
     this.status = Status.Unvisited;
+  }
+
+  reset() {
+    this.clean();
+    if (this.role === Role.Block) {
+      this.role = Role.Normal;
+    }
   }
 }

@@ -1,11 +1,11 @@
 import { construct_svelte_component } from 'svelte/internal';
-import CellModel, { Status } from './Cell';
+import CellModel, { Status, Role } from './Cell';
 import Cell from './Cell.svelte';
 import PriorityQueue from 'priority-queue-typescript';
 
 const directions = [[0, -1], [-1, 0], [0, 1], [1, 0] ]
 
-const defaultDelay = 5;
+const defaultDelay = 0;
 
 // Algorithms
 export const bfs = async (startRow: number, startCol: number, desRow: number, desCol: number, grid: CellModel[][], gridView: Cell[][]) => {
@@ -26,13 +26,18 @@ export const bfs = async (startRow: number, startCol: number, desRow: number, de
   const visited = new ArraySet();
   visited.add([startRow, startCol]);
 
+  let found = false;
+
   while (q.length !== 0) {
     const [r, c] = <number[]>q.shift();
 
     grid[r][c].setStatus(Status.Visited);
     gridView[r][c].update();
 
-    if (r === desRow && c === desCol) break
+    if (r === desRow && c === desCol) {
+      found = true;
+      break;
+    }
 
     for (let i = 0; i < directions.length; i++) {
       const d = directions[i];
@@ -40,6 +45,7 @@ export const bfs = async (startRow: number, startCol: number, desRow: number, de
       const nc = c + d[1];
 
       if ((nr < 0) || (nc < 0) || (nr >= m) || (nc >= n)) continue
+      if (grid[nr][nc].role === Role.Block) continue
       if (visited.has([nr, nc])) continue
 
       parents[nr][nc] = [r, c]
@@ -52,8 +58,10 @@ export const bfs = async (startRow: number, startCol: number, desRow: number, de
       await new Promise(f => setTimeout(f, defaultDelay));
     }
   }
-  const path = tracePath(startRow, startCol, desRow, desCol, parents)
-  visualizePath(path, grid, gridView);
+  if (found) {
+    const path = tracePath(startRow, startCol, desRow, desCol, parents)
+    visualizePath(path, grid, gridView);
+  }
 }
 
 export const dfs = async (startRow: number, startCol: number, desRow: number, desCol: number, grid: CellModel[][], gridView: Cell[][]) => {
@@ -74,6 +82,8 @@ export const dfs = async (startRow: number, startCol: number, desRow: number, de
   const visited = new ArraySet();
   visited.add([startRow, startCol]);
 
+  let found = false;
+
   while (s.length !== 0) {
     const [r, c] = <number[]>s.pop();
 
@@ -82,7 +92,10 @@ export const dfs = async (startRow: number, startCol: number, desRow: number, de
 
     visited.add([r, c]);
 
-    if (r === desRow && c === desCol) break
+    if (r === desRow && c === desCol) {
+      found = true
+      break
+    }
 
     for (let i = 0; i < directions.length; i++) {
       const d = directions[i];
@@ -90,6 +103,7 @@ export const dfs = async (startRow: number, startCol: number, desRow: number, de
       const nc = c + d[1];
 
       if ((nr < 0) || (nc < 0) || (nr >= m) || (nc >= n)) continue
+      if (grid[nr][nc].role === Role.Block) continue
       if (visited.has([nr, nc])) continue
 
       parents[nr][nc] = [r, c]
@@ -101,8 +115,11 @@ export const dfs = async (startRow: number, startCol: number, desRow: number, de
       await new Promise(f => setTimeout(f, defaultDelay));
     }
   }
-  const path = tracePath(startRow, startCol, desRow, desCol, parents)
-  await visualizePath(path, grid, gridView);
+
+  if (found) {
+    const path = tracePath(startRow, startCol, desRow, desCol, parents)
+    visualizePath(path, grid, gridView);
+  }
 }
 
 export const dijkstra = async (startRow: number, startCol: number, desRow: number, desCol: number, grid: CellModel[][], gridView: Cell[][]) => {
@@ -147,6 +164,8 @@ export const dijkstra = async (startRow: number, startCol: number, desRow: numbe
 
   const visited = new ArraySet();
 
+  let found = false;
+
   while (pq.size() !== 0) {
     const { d, r, c } = <Position>pq.poll();
 
@@ -154,7 +173,10 @@ export const dijkstra = async (startRow: number, startCol: number, desRow: numbe
     gridView[r][c].update();
     visited.add([r, c]);
 
-    if (r === desRow && c === desCol) break
+    if (r === desRow && c === desCol) {
+      found = true
+      break
+    }
 
     for (let i = 0; i < directions.length; i++) {
       const direction = directions[i];
@@ -163,6 +185,7 @@ export const dijkstra = async (startRow: number, startCol: number, desRow: numbe
       const nd = d + 1;
 
       if ((nr < 0) || (nc < 0) || (nr >= m) || (nc >= n)) continue
+      if (grid[nr][nc].role === Role.Block) continue
       if (visited.has([nr, nc])) continue
       if (distMap[nr][nc] <= nd) continue
 
@@ -177,8 +200,10 @@ export const dijkstra = async (startRow: number, startCol: number, desRow: numbe
       await new Promise(f => setTimeout(f, defaultDelay));
     }
   }
-  const path = tracePath(startRow, startCol, desRow, desCol, parents)
-  await visualizePath(path, grid, gridView);
+  if (found) {
+    const path = tracePath(startRow, startCol, desRow, desCol, parents)
+    visualizePath(path, grid, gridView);
+  }
 }
 
 export const greedyBfs = async (startRow: number, startCol: number, desRow: number, desCol: number, grid: CellModel[][], gridView: Cell[][]) => {
@@ -228,6 +253,8 @@ export const greedyBfs = async (startRow: number, startCol: number, desRow: numb
   const visited = new ArraySet();
   visited.add([startRow, startCol]);
 
+  let found = false;
+
   while (pq.size() !== 0) {
     const { w, r, c } = <Position>pq.poll();
 
@@ -235,7 +262,10 @@ export const greedyBfs = async (startRow: number, startCol: number, desRow: numb
     gridView[r][c].update();
     visited.add([r, c]);
 
-    if (r === desRow && c === desCol) break
+    if (r === desRow && c === desCol) {
+      found = true
+      break;
+    }
 
     for (let i = 0; i < directions.length; i++) {
       const d = directions[i];
@@ -246,19 +276,21 @@ export const greedyBfs = async (startRow: number, startCol: number, desRow: numb
       if ((nr < 0) || (nc < 0) || (nr >= m) || (nc >= n)) continue
       if (visited.has([nr, nc])) continue
       if (weightMap[nr][nc] <= nw) continue
+      if (grid[nr][nc].role === Role.Block) continue
 
       weightMap[nr][nc] = nw
       parents[nr][nc] = [r, c]
       pq.add(new Position(nw, nr, nc))
-
       grid[nr][nc].setStatus(Status.Visiting);
       gridView[nr][nc].update();
 
       await new Promise(f => setTimeout(f, defaultDelay));
     }
   }
-  const path = tracePath(startRow, startCol, desRow, desCol, parents)
-  await visualizePath(path, grid, gridView);
+  if (found) {
+    const path = tracePath(startRow, startCol, desRow, desCol, parents)
+    visualizePath(path, grid, gridView);
+  }
 }
 
 export const aStar = async (startRow: number, startCol: number, desRow: number, desCol: number, grid: CellModel[][], gridView: Cell[][]) => {
@@ -309,6 +341,8 @@ export const aStar = async (startRow: number, startCol: number, desRow: number, 
 
   const visited = new ArraySet();
 
+  let found = false;
+
   while (pq.size() !== 0) {
     const { d, h, r, c } = <Position>pq.poll();
 
@@ -316,7 +350,10 @@ export const aStar = async (startRow: number, startCol: number, desRow: number, 
     gridView[r][c].update();
     visited.add([r, c]);
 
-    if (r === desRow && c === desCol) break
+    if (r === desRow && c === desCol) {
+      found = true
+      break;
+    }
 
     for (let i = 0; i < directions.length; i++) {
       const direction = directions[i];
@@ -324,8 +361,10 @@ export const aStar = async (startRow: number, startCol: number, desRow: number, 
       const nc = c + direction[1];
       const nd = d + 1;
       const nh = heuristic(nr, nc);
-
+      
+      
       if ((nr < 0) || (nc < 0) || (nr >= m) || (nc >= n)) continue
+      if (grid[nr][nc].role === Role.Block) continue
       if (visited.has([nr, nc])) continue
       if (valMap[nr][nc] <= nd + nh) continue
 
@@ -340,8 +379,10 @@ export const aStar = async (startRow: number, startCol: number, desRow: number, 
       await new Promise(f => setTimeout(f, defaultDelay));
     }
   }
-  const path = tracePath(startRow, startCol, desRow, desCol, parents)
-  await visualizePath(path, grid, gridView);
+  if (found) {
+    const path = tracePath(startRow, startCol, desRow, desCol, parents)
+    visualizePath(path, grid, gridView);
+  }
 }
 
 export const visualizePath = async (path: number[][], grid: CellModel[][], gridView: Cell[][]) => {
