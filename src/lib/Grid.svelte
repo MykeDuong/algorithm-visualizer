@@ -42,7 +42,7 @@
   import CellModel, { Role, Status } from './Cell';
   import Cell from './Cell.svelte'
   import { aStar, bfs, dfs, dijkstra, greedyBfs } from './Algorithms';
-  import { visualizeAlgorithm } from './stores';
+  import { visualizeAlgorithm, lock } from './stores';
 
   const row = 31
   const col = 40
@@ -68,33 +68,34 @@
   grid[desRow][desCol].setDestination();
 
   visualizeAlgorithm.subscribe(async value => {
+    lock.set(true);
     switch (value) {
-      case "Breath-first Search": {
+      case "clean": {
         reset();
-        bfs(startRow, startCol, desRow, desCol, grid, gridView);
+        break;
+      }
+      case "Breath-first Search": {
+        await bfs(startRow, startCol, desRow, desCol, grid, gridView);
         break;
       }
       case "Depth-first Search": {
-        reset();
-        dfs(startRow, startCol, desRow, desCol, grid, gridView);
+        await dfs(startRow, startCol, desRow, desCol, grid, gridView);
         break;
       }
       case "Dijkstra's Algorithm": {
-        reset();
-        dijkstra(startRow, startCol, desRow, desCol, grid, gridView);
+        await dijkstra(startRow, startCol, desRow, desCol, grid, gridView);
         break;
       }
       case "Greedy Best-first Search": {
-        reset();
-        greedyBfs(startRow, startCol, desRow, desCol, grid, gridView);
+        await greedyBfs(startRow, startCol, desRow, desCol, grid, gridView);
         break;
       }
       case "A* Search": {
-        reset();
-        aStar(startRow, startCol, desRow, desCol, grid, gridView);
+        await aStar(startRow, startCol, desRow, desCol, grid, gridView);
         break;
       }
     }
+    lock.set(false);
   })
 
   const reset = () => {

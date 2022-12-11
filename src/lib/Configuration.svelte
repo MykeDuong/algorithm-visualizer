@@ -37,10 +37,15 @@
     </button>
   </div>
 
-  <button class="visualize-button" on:click={handleVisualize}>
-    {selectedAlgorithm ? `Visualize ${selectedAlgorithm}` : 'No Algorithm Selected'}
-  </button>
-
+    {#if locked === false}
+    <button class="visualize-button" on:click={handleVisualize}>
+      {selectedAlgorithm ? `Visualize ${selectedAlgorithm}` : 'No Algorithm Selected'}
+    </button>
+    {:else}
+    <button class="locked-button"  disabled>
+      Algorithm running...
+    </button>
+    {/if}
 </div>
 
 <style lang='scss'>
@@ -161,16 +166,31 @@
     }
   }
 
+  .locked-button {
+    background-color: red;
+    border: none;
+    border-radius: 10px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    margin-right: 20%;
+    margin-left: calc(20% - 10px);
+
+    font-size: 1rem;
+    text-align: center;
+    color: var(--light-color-2);
+  }
 </style>
 
 <script lang='ts'>
   import Icon from '@iconify/svelte';
   import theme from '$lib/theme';
-  import { visualizeAlgorithm } from './stores';
+  import { visualizeAlgorithm, lock } from './stores';
 
   let algorithmsVisible = false;
   let mazeCreationVisible = false;
   let cellsVisible = false;
+  let updateButton = 0;
+  let locked = false
 
   let selectedAlgorithm: string = ''; 
 
@@ -195,7 +215,14 @@
   }
 
   const handleVisualize = (e: MouseEvent) => {
+    visualizeAlgorithm.set('clean');
     visualizeAlgorithm.set(selectedAlgorithm);
   }
+
+  $: lock.subscribe(value => {
+    locked = value
+    console.log(locked);
+    updateButton++;
+  })
 
 </script>
