@@ -3,6 +3,7 @@
     class={`cell ${setStatus()} `}
     id={`${i} ${j}`}
     on:mousemove={handleMouseMove}
+    on:mousedown={handleSelectCellRole}
   >
     {#if (toggleDebug)}
       <p>{i} {j}</p>
@@ -108,6 +109,12 @@
 
   gridMouseDownStore.subscribe(value => mouseDown = value)
 
+  const handleSelectCellRole = (e: MouseEvent) => {
+    if (grid[i][j].role === Role.Start || grid[i][j].role === Role.Destination) {
+      selectedCellRoleStore.set(grid[i][j].role);
+    }
+  }
+
   const handleMouseMove = (e: MouseEvent) => {
     if (!mouseDown) return
     
@@ -123,13 +130,13 @@
         break;
       }
       case (Role.Start): {
-        if (grid[i][j].role === Role.Destination) return
+        if (grid[i][j].role !== Role.Normal) return
         grid[i][j].setRole(Role.Start);
         startCellStore.set([i, j])
         break;
       }
       case (Role.Destination): {
-        if (grid[i][j].role === Role.Start) return
+        if (grid[i][j].role !== Role.Normal) return
         grid[i][j].setRole(Role.Destination);
         desCellStore.set([i, j])
         break;

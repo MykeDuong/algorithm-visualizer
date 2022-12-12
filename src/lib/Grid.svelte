@@ -49,10 +49,10 @@
 <script lang='ts'>
   import { onMount } from 'svelte';
 
-  import CellModel, { Role, Status } from './Cell';
+  import CellModel, { Role } from './Cell';
   import Cell from './Cell.svelte'
-  import { aStar, bfs, dfs, dijkstra, greedyBfs } from './Algorithms';
-  import { visualizeAlgorithmStore, lockStore, gridMouseDownStore, startCellStore, desCellStore } from './stores';
+  import { aStar, bfs, dfs, dijkstra, greedyBfs, kruskal, prim, randomMaze } from './Algorithms';
+  import { visualizeAlgorithmStore, lockStore, gridMouseDownStore, startCellStore, desCellStore, selectedCellRoleStore } from './stores';
 
   let boxWidth: number = 0;
   let boxHeight: number = 0;
@@ -165,6 +165,18 @@
       }
       case "A* Search": {
         await aStar(startRow, startCol, desRow, desCol, grid, gridView);
+        break;
+      }
+      case "Kruskal-based Generation": {
+        await kruskal(grid, gridView);
+        break;
+      }
+      case "Prim-based Generation": {
+        await prim(grid, gridView);
+        break;
+      }
+      case "Random Generation": {
+        await randomMaze(grid, gridView);
         break;
       }
     }

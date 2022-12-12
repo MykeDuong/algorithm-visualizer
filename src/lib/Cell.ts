@@ -47,4 +47,9 @@ export default class CellModel {
       this.role = Role.Normal;
     }
   }
+
+  fullReset() {
+    this.clean();
+    this.role = Role.Normal;
+  }
 }

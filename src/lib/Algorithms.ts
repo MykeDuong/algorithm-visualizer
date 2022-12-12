@@ -2,6 +2,7 @@ import { construct_svelte_component } from 'svelte/internal';
 import CellModel, { Status, Role } from './Cell';
 import Cell from './Cell.svelte';
 import PriorityQueue from 'priority-queue-typescript';
+import { desCellStore, startCellStore } from './stores';
 
 const directions = [[0, -1], [-1, 0], [0, 1], [1, 0] ]
 
@@ -385,7 +386,140 @@ export const aStar = async (startRow: number, startCol: number, desRow: number, 
   }
 }
 
-export const visualizePath = async (path: number[][], grid: CellModel[][], gridView: Cell[][]) => {
+export const kruskal = async (grid: CellModel[][], gridView: Cell[][]) => {
+  const m = grid.length;
+  const n = grid[0].length;
+
+  const { edgeArray, normalCell, parents } = await generateWalledGrid(grid, gridView);
+
+  // Kruskal + Union-find
+  while (edgeArray.length > 0) {
+    const edge = <number[]>edgeArray.pop();
+    const nodes = getNodes(edge);
+
+    if (nodes.length === 0) continue;
+  
+    const [[r1, c1], [r2, c2]] = nodes
+
+    if (r1 < 0 || c1 < 0 || r2 < 0 || c2 < 0 || r1 >= m || r2 >= m || c1 >= n || c2 >= n) continue
+    
+    const p1 = find([r1, c1], parents)
+    const p2 = find([r2, c2], parents)
+
+    if (p1 === p2) continue
+
+    parents[p1[0]][p1[1]] = p2
+    
+    normalCell.push([edge[0], edge[1]])
+    grid[edge[0]][edge[1]].setRole(Role.Normal)
+    gridView[edge[0]][edge[1]].update();
+    await new Promise(f => setTimeout(f, defaultDelay));
+  }
+
+  setEndPoints(normalCell);
+}
+
+export const prim = async (grid: CellModel[][], gridView: Cell[][]) => {
+  const walledGridDirections = [[0, -2], [0, 2], [2, 0], [-2, 0]]
+  const m = grid.length;
+  const n = grid[0].length;
+
+  const { normalCell } = await generateWalledGrid(grid, gridView);
+
+  const frontier = new ArraySet();
+  
+  shuffleArray(normalCell)
+  const root = normalCell[0];
+
+  // Set of nodes in Tree
+  const tree = new ArraySet();
+  tree.add(root);
+
+  // Initialize frontier
+  let d = []
+  for (d of walledGridDirections) {
+    const nr = root[0] + d[0]
+    const nc = root[1] + d[1]
+    if (nr < 0 || nc < 0 || nr >= m || nc >= n) continue
+    frontier.add([nr, nc])
+  }
+
+  while (frontier.size !== 0) {
+    let frontierCell: any[] = [0, 0];
+    
+    // Random cell
+    const randomIndex = Math.floor(Math.random() * frontier.size);
+    let i = 0;
+    for (const value of frontier) {
+      if (i === randomIndex) {
+        frontier.delete(value);
+        frontierCell = value.split(',');
+
+        for (let i = 0; i < frontierCell.length; i++) {
+          frontierCell[i] = parseInt(frontierCell[i]);
+        }
+        break;
+      }
+      i++;
+    }
+
+    // Connect to current tree
+    for (d of walledGridDirections) {
+      const nr = frontierCell[0] + d[0]
+      const nc = frontierCell[1] + d[1]
+
+      if (nr < 0 || nc < 0 || nr >= m || nc >= n) continue
+
+      if (!tree.has([nr, nc])) continue
+
+      tree.add([frontierCell[0], frontierCell[1]])
+
+      const connectingRow = (nr + frontierCell[0]) / 2;
+      const connectingCol = (nc + frontierCell[1]) / 2;
+
+      normalCell.push([connectingRow, connectingCol])
+      grid[connectingRow][connectingCol].setRole(Role.Normal)
+      gridView[connectingRow][connectingCol].update();
+
+      break;
+    }
+
+    // Update frontier
+    for (d of walledGridDirections) {
+      const nr = frontierCell[0] + d[0]
+      const nc = frontierCell[1] + d[1]
+
+      if (nr < 0 || nc < 0 || nr >= m || nc >= n) continue
+
+      if (tree.has([nr, nc])) continue
+
+      frontier.add([nr, nc])
+    }
+    await new Promise(f => setTimeout(f, defaultDelay));
+  }
+
+  setEndPoints(normalCell);
+}
+
+export const randomMaze = async (grid: CellModel[][], gridView: Cell[][]) => {
+  const { edgeArray, normalCell } = await generateWalledGrid(grid, gridView);
+
+  while (edgeArray.length > 0) {
+    const edge = <number[]>edgeArray.pop();
+    const rand = Math.random();
+    if (rand > 0.4) {
+      normalCell.push(edge);
+      grid[edge[0]][edge[1]].setRole(Role.Normal);
+      gridView[edge[0]][edge[1]].update();
+      await new Promise(f => setTimeout(f, defaultDelay));
+    }
+  }
+
+  setEndPoints(normalCell);
+}
+
+// Helper functions
+const visualizePath = async (path: number[][], grid: CellModel[][], gridView: Cell[][]) => {
   for (const cell of path) {
     const [r, c] = cell;
     grid[r][c].setStatus(Status.Path);
@@ -406,6 +540,88 @@ const tracePath = (startRow: number, startCol: number, desRow: number, desCol: n
   }
   path.push([r, c]);
   return path.reverse();
+}
+
+const getNodes = (edge: number[]) => {
+  const [r, c] = edge;
+  if (r % 2 === 0 && c % 2 !== 0) { 
+    return [[r - 1, c], [r + 1, c]]
+  } else if (r % 2 !== 0 && c % 2 === 0) {
+    return [[r, c - 1], [r, c + 1]]
+  } else {
+    return [];
+  }
+}
+
+const generateWalledGrid = async (grid: CellModel[][], gridView: Cell[][]) => {
+  const m = grid.length;
+  const n = grid[0].length;
+
+  let r;
+  let c;
+
+  // Full Reset
+  for (r = 0; r < m; r++) {
+    for (c = 0; c < n; c++) {
+      grid[r][c].fullReset()
+      gridView[r][c].update();
+    }
+  }
+
+  const edgeArray: number[][] = [];
+  const normalCell: number[][] = []
+  const parents: number[][][] = Array(m)
+
+  for (r = 0; r < m; r++) {
+    parents[r] = Array(n);
+    for (c = 0; c < n; c++) {
+      if (r % 2 === 0 || c % 2 === 0) {
+        grid[r][c].setRole(Role.Block);
+        gridView[r][c].update()
+        await new Promise(f => setTimeout(f, defaultDelay));
+        if (r % 2 !== 0 || c % 2 !== 0) {
+          edgeArray.push([r, c])
+        }
+        parents[r][c] = [-1, -1]
+      } else {
+        parents[r][c] = [r, c]
+        normalCell.push([r, c])
+      }
+    }
+  }
+
+  shuffleArray(edgeArray);
+
+  return { edgeArray, normalCell, parents }
+}
+
+const shuffleArray = (array: any[]) => {
+  for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+const setEndPoints = (normalCell: number[][]) => {
+  //set new start & destination
+  shuffleArray(normalCell);
+
+  //Start
+  const start = <number[]>normalCell.pop();
+  startCellStore.set(start)
+
+  // Desination
+  const des = <number[]>normalCell.pop();
+  desCellStore.set(des);
+}
+
+const find = (node: number[], parents: number[][][]) => {
+  const [r, c] = node;
+  if (parents[r][c].length === 0) return [-1, -1]
+  if (parents[r][c][0] !== r || parents[r][c][1] !== c) {
+    parents[r][c] = find([parents[r][c][0], parents[r][c][1]], parents)
+  }
+  return parents[r][c]
 }
 
 // Data Structures

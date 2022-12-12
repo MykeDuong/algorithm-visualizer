@@ -13,11 +13,11 @@
       <div class="app__configuration-options algorithm-options">
         <h2 class="subcategory-header">Weghted Algorithm</h2>
           {#each weightedAlgorithms as algorithm}
-            <button class={`algorithm-button ${selectedAlgorithm === algorithm ? 'algorithm-selected' : ''}`} id={algorithm} on:click={handleSelectAlgorithm}>{algorithm}</button>
+            <button class={`algorithm-button ${selectedAlgorithm === algorithm ? 'algorithm-selected' : ''}`} id={algorithm} value={algorithm} on:click={handleSelectAlgorithm}>{algorithm}</button>
           {/each}
         <h2 class="subcategory-header">Unweighted Algorithm</h2>
           {#each unweightedAlgorithms as algorithm}
-            <button class={`algorithm-button ${selectedAlgorithm === algorithm ? 'algorithm-selected' : ''}`} id={algorithm} on:click={handleSelectAlgorithm}>{algorithm}</button>
+            <button class={`algorithm-button ${selectedAlgorithm === algorithm ? 'algorithm-selected' : ''}`} id={algorithm} value={algorithm} on:click={handleSelectAlgorithm}>{algorithm}</button>
           {/each}
       </div>
     {/if}
@@ -25,7 +25,7 @@
 
   <div class="category">
     <button class="category-header" id='cells' on:click={handleCategoryExpand}>
-      <Icon icon="ic:twotone-square" color={theme.colors.highlightColor0} />
+      <Icon icon="ic:twotone-square" width={40} color={theme.colors.highlightColor0} />
       Cells
     </button>
     {#if cellsVisible}
@@ -59,25 +59,56 @@
   </div>
 
   <div class="category">
-    <button class="category-header" id='maze-creation' on:click={handleCategoryExpand}>
+    <button class="category-header" id='maze-generation' on:click={handleCategoryExpand}>
       <Icon icon="game-icons:maze" width={40} color={theme.colors.highlightColor0} />
-      Maze Creation
+      Maze Generation
     </button>
+    {#if (mazeGenerationVisible)}
+      <div class="maze-gen-algos">
+        <button 
+          class={`maze-gen-algo-button ${selectedAlgorithm === 'Kruskal-based Generation' ? 'maze-gen-algo-selected' : ''}`} 
+          value="Kruskal-based Generation" 
+          on:click={handleSelectAlgorithm}
+        >
+          Kruskal-based Generation
+        </button>
+        <button 
+          class={`maze-gen-algo-button ${selectedAlgorithm === 'Prim-based Generation' ? 'maze-gen-algo-selected' : ''}`}
+          value="Prim-based Generation" 
+          on:click={handleSelectAlgorithm}
+        >
+          Prim-based Generation
+        </button>
+        <button
+          class={`maze-gen-algo-button ${selectedAlgorithm === 'Random Generation' ? 'maze-gen-algo-selected' : ''}`}
+          value="Random Generation" 
+          on:click={handleSelectAlgorithm}
+        >
+          Random Generation
+        </button>
+      </div>
+    {/if}
   </div>
 
-    {#if locked === false}
-    <button class="visualize-button" on:click={handleVisualize}>
-      {selectedAlgorithm ? `Visualize ${selectedAlgorithm}` : 'No Algorithm Selected'}
-    </button>
-    {:else}
-    <button class="locked-button"  disabled>
+  {#if locked === false}
+  <button class="visualize-button" on:click={handleVisualize}>
+    {selectedAlgorithm ? `Visualize ${selectedAlgorithm}` : 'No Algorithm Selected'}
+  </button>
+  {:else}
+  <button class="locked-button"  disabled>
       Algorithm running...
-    </button>
-    {/if}
+  </button>
+  {/if}
 
-    <button class="reset-button" on:click={handleReset}>
+  {#if locked === false}
+  <button class="reset-button" on:click={handleReset}>
       Reset Grid
-    </button>
+  </button>
+  {:else}
+  <button class="locked-button"  disabled>
+      Algorithm running...
+  </button>
+  {/if}
 
 </div>
 
@@ -270,6 +301,34 @@
     font-size: 40px;
     overflow: hidden;
   }
+
+  .maze-gen-algos {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .maze-gen-algo-button {
+    background-color: inherit;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: 40px;
+    margin-right: 20px;
+    padding-left: 10px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+
+    color: var(--light-color-3);
+    font-weight: 500;
+    font-size: 1.5rem;
+  }
+
+  .maze-gen-algo-selected {
+    border-radius: 10px;
+    background-color: var(--highlight-color-0);
+  }
 </style>
 
 <script lang='ts'>
@@ -278,22 +337,21 @@
   import { visualizeAlgorithmStore, lockStore, selectedCellRoleStore } from './stores';
 	import { Role } from './Cell';
 
-  let algorithmsVisible = true;
-  let mazeCreationVisible = false;
+  let algorithmsVisible = false;
+  let mazeGenerationVisible = false;
   let cellsVisible = false;
   let locked = false
 
   let selectedAlgorithm: string = '';
   let selectedCellRole: Role = Role.Block;
-
   const weightedAlgorithms: string[] = ["Dijkstra's Algorithm", "Greedy Best-first Search", "A* Search"];
   const unweightedAlgorithms: string[] = ["Breath-first Search", "Depth-first Search"];
 
   const handleCategoryExpand = (e: MouseEvent) => {
     if ((<HTMLElement>e.target!).id === 'algorithms') {
       algorithmsVisible = !algorithmsVisible;
-    } else if ((<HTMLElement>e.target!).id === 'maze-creation') {
-      mazeCreationVisible = !mazeCreationVisible;
+    } else if ((<HTMLElement>e.target!).id === 'maze-generation') {
+      mazeGenerationVisible = !mazeGenerationVisible;
     } else if ((<HTMLElement>e.target!).id === 'cells') {
       cellsVisible = !cellsVisible;
     } else {
@@ -302,7 +360,7 @@
   }
 
   const handleSelectAlgorithm = (e: MouseEvent) => {
-    selectedAlgorithm = (<HTMLElement>e.target!).id;
+    selectedAlgorithm = (<HTMLButtonElement>e.target!).value;
   }
 
   const handleSelectCellRole = (e: MouseEvent) => {
@@ -319,7 +377,11 @@
     visualizeAlgorithmStore.set('reset');
   }
 
-  $: lockStore.subscribe(value => {
+  lockStore.subscribe(value => {
     locked = value
+  })
+
+  selectedCellRoleStore.subscribe(value => {
+    selectedCellRole = value;
   })
 </script>
